@@ -1,26 +1,35 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import * as React from "react";
+import { PanoramaScene } from "./3d/scene";
+import { useDrag } from './hooks/use-drag'
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const appRef = React.useRef<HTMLDivElement>(null);
+  const psRef = React.useRef<PanoramaScene>();
+
+  const [onDrageStart, [x, y]] = useDrag()
+
+  React.useEffect(() => {
+    if (appRef.current) {
+      psRef.current = new PanoramaScene(appRef.current);
+    }
+    
+    return () => {
+      psRef.current?.teardown();
+    };
+  }, []);
+
+  React.useEffect(() => {
+    console.log([x, y])
+
+    psRef.current?.move(x / 1000, y / 1000)
+  }, [x, y])
+
+  return <div 
+    className="App" 
+    ref={appRef} 
+    onPointerDown={onDrageStart}
+  ></div>;
 }
 
 export default App;
