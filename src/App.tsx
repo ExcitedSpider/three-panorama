@@ -20,9 +20,7 @@ function App() {
   }, []);
 
   React.useEffect(() => {
-    console.log([x, y])
-
-    psRef.current?.move(x / 1000, y / 1000)
+    psRef.current?.move(x / 10, y / 10)
   }, [x, y])
 
   return <div 

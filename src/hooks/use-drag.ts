@@ -40,9 +40,6 @@ export function useDrag(): [PointerEventHandler, [number, number]] {
       })
     });
 
-    return () => {
-      event$.unsubscribe();
-    };
   }, []);
 
   return [pressHandler, reactValue];

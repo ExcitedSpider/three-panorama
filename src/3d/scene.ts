@@ -1,11 +1,14 @@
 import * as THREE from "three";
+import bgImg from './bg.jpg'
 
+const RADIUS = 1000;
 export class PanoramaScene {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
 
-  private lookat: THREE.Vector3;
+  private lon = 0;
+  private lat = 0;
 
   constructor(container: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer();
@@ -16,10 +19,10 @@ export class PanoramaScene {
       0.1,
       1000
     );
-    this.lookat = new THREE.Vector3(0, 0, 0);
 
     /** scene */
     const scene = this.scene;
+    scene.background = new THREE.Color( 0xf0f0f0 );
     const renderer = this.renderer;
     renderer.setSize(container.clientWidth, container.clientHeight);
 
@@ -27,18 +30,21 @@ export class PanoramaScene {
     const camera = this.camera;
 
     // 开发用，之后删掉
-    camera.position.set(0, 0, 5);
-    camera.lookAt(this.lookat)
+    // camera.position.set(0, 0, 2);
 
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    // cube.position.set(0, 0, 5)
-    scene.add(cube);
+
+    camera.lookAt(new THREE.Vector3(0, 0, 0))
+
+
+    const texture = new THREE.TextureLoader().load(bgImg);
+    const sphereGeometry = new THREE.SphereGeometry(RADIUS, 50, 50);
+    sphereGeometry.scale(-1, 1, 1);
+    const sphereMaterial = new THREE.MeshBasicMaterial({map: texture});
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    scene.add(sphere);
 
     /** run! */
     container.appendChild(renderer.domElement);
-
     this.animate();
   }
 
@@ -47,10 +53,21 @@ export class PanoramaScene {
     console.log("TODO: implement");
   }
   
-  move(x: number, y: number){
-    this.lookat = new THREE.Vector3(this.lookat.x + x, this.lookat.y + y, 0)
+  move(offsetX: number, offsetY: number){
+    const lon = offsetX + this.lon;
+    const lat = Math.max(-85, Math.min(85, offsetY + this.lat));
 
-    this.camera.lookAt(this.lookat)
+    const phi = THREE.MathUtils.degToRad(90 - lat);
+    const theta = THREE.MathUtils.degToRad(lon);
+
+    this.camera.lookAt(
+      RADIUS * Math.sin(phi) * Math.cos(theta),
+      RADIUS * Math.cos(phi),
+      RADIUS * Math.sin(phi) * Math.sin(theta),
+    )
+
+    this.lat = lat;
+    this.lon = lon;
   };
 
   private animate() {
