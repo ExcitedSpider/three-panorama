@@ -87,7 +87,7 @@ export class PanoramaScene {
 
   private animate() {
     this.marks.forEach(mark=>{
-      const textGrometry = new THREE.TextureLoader();
+      // TODO: render marks
 
     })
 
