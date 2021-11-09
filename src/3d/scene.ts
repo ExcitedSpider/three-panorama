@@ -2,6 +2,7 @@ import * as THREE from "three";
 import bgImg from "./bg.jpg";
 
 const RADIUS = 1000;
+const MOVE_RATIO = 0.1;
 export class PanoramaScene {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
@@ -9,6 +10,8 @@ export class PanoramaScene {
 
   private lon = 0;
   private lat = 0;
+
+  private marks:{text: string, position: THREE.Vector3}[] = [];
 
   constructor(container: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer();
@@ -51,31 +54,61 @@ export class PanoramaScene {
   }
 
   move(offsetX: number, offsetY: number) {
-    const lon = offsetX + this.lon;
-    const lat = Math.max(-85, Math.min(85, offsetY + this.lat));
+    const lon = offsetX * MOVE_RATIO + this.lon;
+    const lat = Math.max(-85, Math.min(85, offsetY * MOVE_RATIO + this.lat));
 
-    const phi = THREE.MathUtils.degToRad(90 - lat);
-    const theta = THREE.MathUtils.degToRad(lon);
+    const [phi, theta] = getAngle(lon, lat);
+    const newLookat = sphericalToCartesian(phi, theta);
 
-    this.camera.lookAt(
-      sphericalToCartesian(phi, theta)
-    )
+    this.camera.lookAt(newLookat);
 
     this.lat = lat;
     this.lon = lon;
   }
 
+  // TODO: make to module private
+  getPoint(clientX: number, clientY: number) {
+    const lon = clientX * MOVE_RATIO + this.lon;
+    const lat =
+      0 - Math.max(-85, Math.min(85, clientY * MOVE_RATIO + this.lat));
+
+    return [lon, lat];
+  }
+
+  createSprite(clientX: number, clientY: number, mark: string) {
+    const [phi, theta] = this.getPoint(clientX, clientY);
+    const position = sphericalToCartesian(phi, theta, 500);
+
+    this.marks.push({
+      position,
+      text: mark
+    })
+  }
+
   private animate() {
+    this.marks.forEach(mark=>{
+      const textGrometry = new THREE.TextureLoader();
+
+    })
+
     requestAnimationFrame(this.animate?.bind(this));
     this.renderer.render(this.scene, this.camera);
   }
 }
 
+/** 经纬度坐标系换算成球坐标系角度 */
+function getAngle(lon: number, lat: number) {
+  const phi = THREE.MathUtils.degToRad(90 - lat);
+  const theta = THREE.MathUtils.degToRad(lon);
+
+  return [phi, theta];
+}
+
 /** 球坐标到直角坐标系 */
-function sphericalToCartesian(phi: number, theta: number) {
+function sphericalToCartesian(phi: number, theta: number, radius = RADIUS) {
   return new THREE.Vector3(
-    RADIUS * Math.sin(phi) * Math.cos(theta),
-    RADIUS * Math.cos(phi),
-    RADIUS * Math.sin(phi) * Math.sin(theta)
+    radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta)
   );
 }

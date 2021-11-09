@@ -8,6 +8,7 @@ import {
   takeUntil,
   BehaviorSubject,
   withLatestFrom,
+  throttleTime,
 } from "rxjs";
 
 export function useDrag(): [PointerEventHandler, [number, number]] {
@@ -30,7 +31,7 @@ export function useDrag(): [PointerEventHandler, [number, number]] {
     startStream.subscribe(() => {
       const moveStream = (
         fromEvent(window, "pointermove") as Observable<PointerEvent>
-      ).pipe(map(getCoords), takeUntil(fromEvent(window, "pointerup"),), withLatestFrom(state$));
+      ).pipe(map(getCoords), takeUntil(fromEvent(window, "pointerup"),), withLatestFrom(state$), throttleTime(16));
 
       moveStream.subscribe(([cur, prev])=>{
         const newValue = [prev[0] - cur[0] , cur[1] - prev[1]] as [number, number];

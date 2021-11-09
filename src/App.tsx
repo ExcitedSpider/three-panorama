@@ -20,13 +20,14 @@ function App() {
   }, []);
 
   React.useEffect(() => {
-    psRef.current?.move(x / 10, y / 10)
+    psRef.current?.move(x, y)
   }, [x, y])
 
   return <div 
     className="App" 
     ref={appRef} 
     onPointerDown={onDrageStart}
+    onClick={(e)=> console.log(psRef.current?.getPoint(e.clientX, e.clientY))}
   ></div>;
 }
 
