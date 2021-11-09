@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import bgImg from './bg.jpg'
+import bgImg from "./bg.jpg";
 
 const RADIUS = 1000;
 export class PanoramaScene {
@@ -22,7 +22,7 @@ export class PanoramaScene {
 
     /** scene */
     const scene = this.scene;
-    scene.background = new THREE.Color( 0xf0f0f0 );
+    scene.background = new THREE.Color(0xf0f0f0);
     const renderer = this.renderer;
     renderer.setSize(container.clientWidth, container.clientHeight);
 
@@ -32,14 +32,12 @@ export class PanoramaScene {
     // 开发用，之后删掉
     // camera.position.set(0, 0, 2);
 
-
-    camera.lookAt(new THREE.Vector3(0, 0, 0))
-
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     const texture = new THREE.TextureLoader().load(bgImg);
     const sphereGeometry = new THREE.SphereGeometry(RADIUS, 50, 50);
     sphereGeometry.scale(-1, 1, 1);
-    const sphereMaterial = new THREE.MeshBasicMaterial({map: texture});
+    const sphereMaterial = new THREE.MeshBasicMaterial({ map: texture });
     const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     scene.add(sphere);
 
@@ -48,12 +46,11 @@ export class PanoramaScene {
     this.animate();
   }
 
-  
   teardown() {
     console.log("TODO: implement");
   }
-  
-  move(offsetX: number, offsetY: number){
+
+  move(offsetX: number, offsetY: number) {
     const lon = offsetX + this.lon;
     const lat = Math.max(-85, Math.min(85, offsetY + this.lat));
 
@@ -61,18 +58,24 @@ export class PanoramaScene {
     const theta = THREE.MathUtils.degToRad(lon);
 
     this.camera.lookAt(
-      RADIUS * Math.sin(phi) * Math.cos(theta),
-      RADIUS * Math.cos(phi),
-      RADIUS * Math.sin(phi) * Math.sin(theta),
+      sphericalToCartesian(phi, theta)
     )
 
     this.lat = lat;
     this.lon = lon;
-  };
+  }
 
   private animate() {
     requestAnimationFrame(this.animate?.bind(this));
     this.renderer.render(this.scene, this.camera);
   }
+}
 
+/** 球坐标到直角坐标系 */
+function sphericalToCartesian(phi: number, theta: number) {
+  return new THREE.Vector3(
+    RADIUS * Math.sin(phi) * Math.cos(theta),
+    RADIUS * Math.cos(phi),
+    RADIUS * Math.sin(phi) * Math.sin(theta)
+  );
 }
